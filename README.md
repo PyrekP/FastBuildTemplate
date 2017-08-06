@@ -2,10 +2,14 @@
 Example on how to use fastbuild for building projects with various compilers, sdk's, and external tools.
 
 Usage:
-1. Download and install selected compilers and [fastbuild](http://fastbuild.org).
-2. Copy necessary compiler files to seleted folders. See files_needed_in_external_folder.txt file for list of files. This step will be replaced by scripts in the future.
-3. Set PATH to include fastbuild folder in external tools.
-4. Open shell prompt and type fbuild while being inside source dir.
+ 1. Download and install selected compilers and [fastbuild](http://fastbuild.org).
+ 2. Copy necessary compiler files to seleted folders. See files_needed_in_external_folder.txt file for list of files. This step will be replaced by scripts in the future.
+ 3. Set PATH to include fastbuild folder in external tools.
+ 4. Enable or disable specific builds/compilers in fbuild.bff file if You didn't prepare them or don't want them:
+
+![builds_compilers](./images/disable_compilers.png)
+
+ 5. Open shell prompt and type fbuild while being inside source dir.
 
 Examples were tested on the following compilers:
 
@@ -28,7 +32,21 @@ As a side note - all tests were done on community editions of Visual Studio, so 
 
 ## Screens
 
-...
+- Windows build:
+
+![win_build](./images/win_build.png)
+
+- Windows solution generation:
+
+![win_solution](./images/win_solution.png)
+
+- Windows build summary:
+
+![win_summary](./images/win_summary.png)
+
+- Linux build with summary (removed path/username/hostname)
+
+![linux_build_with_summary](./images/linux_build_with_summary.png)
 
 ## Future
 
