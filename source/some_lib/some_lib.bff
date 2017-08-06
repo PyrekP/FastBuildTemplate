@@ -1,0 +1,110 @@
+{
+	.ProjectName = 'some_lib'
+	.ProjectPath = 'some_lib'
+	{
+		.UnityInputPath    = '$ProjectPath$/'
+		.UnityInputPattern = { '*.c' }
+		.UnityOutputPath   = '$OutputBase$/Unity/$ProjectPath$/'
+		Unity('$ProjectName$-Unity-Windows') {}
+		Unity('$ProjectName$-Unity-Linux')   {}
+	}
+	
+	#if __WINDOWS__
+	Exec("Simple-Asm") {
+		.ExecExecutable        = '..\External\msvc-15.0-amd64\bin\ml64.exe'
+		.ExecInput             = '..\source\some_lib\simple_nt64_masm.asm'
+		.ExecOutput            = '..\temp\assembly\simple_nt64_masm.out'
+		.ExecArguments         = '/c /Cp /DWIN_X64 /Zd /Zi /Fl /nologo %1 '
+		.ExecWorkingDir        = '..\temp\assembly'
+		.ExecReturnCode        = 0
+		.ExecUseStdOutAsOutput = true
+	}
+	#endif // __WINDOWS__
+	
+	#if __LINUX__
+	Exec("Simple-Asm") {
+		.ExecExecutable        = '/usr/bin/nasm'
+		.ExecInput             = '../source/some_lib/simple_amd64_sysv_nasm.asm'
+		.ExecOutput            = '../temp/assembly/simple_amd64_sysv_nasm.o'
+		.ExecArguments         = '%1 -f elf64 -o %2'
+		.ExecWorkingDir        = '../temp/assembly'
+		.ExecReturnCode        = 0
+		.ExecUseStdOutAsOutput = false
+	}
+	#endif // __LINUX__
+	
+	ForEach(.Config in .Configs_Windows_MSVC) {
+		Using(.Config)
+		.OutputBase + '\$PlatformInfo$-$ArchInfo$-$CompilerInfo$-$Config$\'
+		Library('$ProjectName$-Lib-$PlatformInfo$-$ArchInfo$-$CompilerInfo$-$Config$') {
+			.PreBuildDependencies      = 'Simple-Asm'
+			.CompilerInputUnity        = '$ProjectName$-Unity-Windows'
+			.LibrarianAdditionalInputs = '..\temp\assembly\simple_nt64_masm.obj'
+			.CompilerOutputPath        = '$OutputBase$\$ProjectName$-Build\'
+			.LibrarianOutput           = '$OutputBase$\$ProjectName$.lib'
+		}
+		Alias('$ProjectName$-$PlatformInfo$-$ArchInfo$-$CompilerInfo$-$Config$') {
+			.Targets = '$ProjectName$-Lib-$PlatformInfo$-$ArchInfo$-$CompilerInfo$-$Config$'
+		}
+	}
+	
+	ForEach(.Config in .Configs_Windows_Clang) {
+		Using(.Config)
+		.OutputBase + '\$PlatformInfo$-$ArchInfo$-$CompilerInfo$-$Config$'
+		.CompilerOptions + .CompilerOptionsC
+		Library('$ProjectName$-Lib-$PlatformInfo$-$ArchInfo$-$CompilerInfo$-$Config$') {
+			.PreBuildDependencies      = 'Simple-Asm'
+			.CompilerInputUnity        = '$ProjectName$-Unity-Windows'
+			.LibrarianAdditionalInputs = '..\temp\assembly\simple_nt64_masm.obj'
+			.CompilerOutputPath        = '$OutputBase$\$ProjectName$-Build\'
+			.LibrarianOutput           = '$OutputBase$\$ProjectName$.lib'
+		}
+		Alias('$ProjectName$-$PlatformInfo$-$ArchInfo$-$CompilerInfo$-$Config$') {
+			.Targets = '$ProjectName$-Lib-$PlatformInfo$-$ArchInfo$-$CompilerInfo$-$Config$'
+		}
+	}
+	
+	ForEach(.Config in .Configs_Linux_GCC) {
+		Using(.Config)
+		.OutputBase + '/$PlatformInfo$-$ArchInfo$-$CompilerInfo$-$Config$'
+		.CompilerOptions + .CompilerOptionsC
+		Library('$ProjectName$-Lib-$PlatformInfo$-$ArchInfo$-$CompilerInfo$-$Config$') {
+			.PreBuildDependencies      = 'Simple-Asm'
+			.CompilerInputUnity        = '$ProjectName$-Unity-Linux'
+			.CompilerOutputPath        = '$OutputBase$/$ProjectName$-Build/'
+			.LibrarianAdditionalInputs = '../temp/assembly/simple_amd64_sysv_nasm.o'
+			.LibrarianOutput           = '$OutputBase$/$ProjectName$.a'
+			.LinkerOptions + ' -lpthread -ldl'
+		}
+		Alias('$ProjectName$-$PlatformInfo$-$ArchInfo$-$CompilerInfo$-$Config$') {
+			.Targets = '$ProjectName$-Lib-$PlatformInfo$-$ArchInfo$-$CompilerInfo$-$Config$'
+		}
+	}
+	
+	ForEach(.Config in .Configs_Linux_Clang) {
+		Using(.Config)
+		.OutputBase + '/$PlatformInfo$-$ArchInfo$-$CompilerInfo$-$Config$'
+		.CompilerOptions + .CompilerOptionsC
+		Library('$ProjectName$-Lib-$PlatformInfo$-$ArchInfo$-$CompilerInfo$-$Config$') {
+			.PreBuildDependencies      = 'Simple-Asm'
+			.CompilerInputUnity        = '$ProjectName$-Unity-Linux'
+			.CompilerOutputPath        = '$OutputBase$/$ProjectName$-Build/'
+			.LibrarianAdditionalInputs = '../temp/assembly/simple_amd64_sysv_nasm.o'
+			.LibrarianOutput           = '$OutputBase$/$ProjectName$.a'
+			.LinkerOptions + ' -lpthread -ldl'
+		}
+		Alias('$ProjectName$-$PlatformInfo$-$ArchInfo$-$CompilerInfo$-$Config$') {
+			.Targets = '$ProjectName$-Lib-$PlatformInfo$-$ArchInfo$-$CompilerInfo$-$Config$'
+		}
+	}
+	
+	#if __WINDOWS__
+	VCXProject('$ProjectName$-proj') {
+		.IncludeSearchPath            = '^$(SolutionDir)..\..\source\$ProjectPath$'
+		.ProjectOutput                = '..\temp\VisualStudio\Projects\$ProjectName$.vcxproj'
+		.ProjectInputPaths            = '$ProjectPath$\'
+		.ProjectBasePath              = '$ProjectPath$\'
+		.ProjectAllowedFileExtensions = { '*.c', '*.h', '*.asm', '*.bff', '*.md.html' }
+	}
+	#endif // __WINDOWS__
+}

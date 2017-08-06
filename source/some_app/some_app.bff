@@ -1,0 +1,117 @@
+{
+	.ProjectName = 'some_app'
+	.ProjectPath = 'some_app'
+	{
+		.UnityInputPath    = '$ProjectPath$/'
+		.UnityInputPattern = { '*.c' }
+		.UnityOutputPath   = '$OutputBase$/Unity/$ProjectPath$/'
+		Unity('$ProjectName$-Unity-Windows') {}
+		Unity('$ProjectName$-Unity-Linux')   {}
+	}
+	
+	ForEach(.Config in .Configs_Windows_MSVC) {
+		Using(.Config)
+		.CompilerOptions + ''
+			+ ' /wd4710' // function not inlined
+		.OutputBase + '\$PlatformInfo$-$ArchInfo$-$CompilerInfo$-$Config$\'
+		ObjectList('$ProjectName$-Lib-$PlatformInfo$-$ArchInfo$-$CompilerInfo$-$Config$') {
+			.CompilerInputUnity = '$ProjectName$-Unity-Windows'
+			.CompilerOutputPath = '$OutputBase$\$ProjectPath$-Build\'
+		}
+		Executable('$ProjectName$-Exe-$PlatformInfo$-$ArchInfo$-$CompilerInfo$-$Config$') {
+			.PreBuildDependencies = {
+				'some_lib-$PlatformInfo$-$ArchInfo$-$CompilerInfo$-$Config$'
+			}
+			.Libraries = {
+				'$ProjectName$-Lib-$PlatformInfo$-$ArchInfo$-$CompilerInfo$-$Config$',
+				'some_lib-$PlatformInfo$-$ArchInfo$-$CompilerInfo$-$Config$'
+			}
+			.LinkerOutput  = '$OutputBase$\$ProjectName$.exe'
+			.LinkerOptions + ' /SUBSYSTEM:CONSOLE'
+		}
+		Alias('$ProjectName$-$PlatformInfo$-$ArchInfo$-$CompilerInfo$-$Config$') {
+			.Targets = '$ProjectName$-Exe-$PlatformInfo$-$ArchInfo$-$CompilerInfo$-$Config$'
+		}
+	}
+	
+	ForEach(.Config in .Configs_Windows_Clang) {
+		Using(.Config)
+		.OutputBase + '\$PlatformInfo$-$ArchInfo$-$CompilerInfo$-$Config$'
+		.CompilerOptions + .CompilerOptionsC
+		ObjectList('$ProjectName$-Lib-$PlatformInfo$-$ArchInfo$-$CompilerInfo$-$Config$') {
+			.CompilerInputUnity = '$ProjectName$-Unity-Windows'
+			.CompilerOutputPath = '$OutputBase$\$ProjectPath$-Build\'
+		}
+		Executable('$ProjectName$-Exe-$PlatformInfo$-$ArchInfo$-$CompilerInfo$-$Config$') {
+			.PreBuildDependencies = {
+				'some_lib-$PlatformInfo$-$ArchInfo$-$CompilerInfo$-$Config$'
+			}
+			.Libraries = {
+				'$ProjectName$-Lib-$PlatformInfo$-$ArchInfo$-$CompilerInfo$-$Config$',
+				'some_lib-$PlatformInfo$-$ArchInfo$-$CompilerInfo$-$Config$'
+			}
+			.LinkerOutput  = '$OutputBase$\$ProjectName$.exe'
+			.LinkerOptions + ' /SUBSYSTEM:CONSOLE'
+		}
+		Alias('$ProjectName$-$PlatformInfo$-$ArchInfo$-$CompilerInfo$-$Config$') {
+			.Targets = '$ProjectName$-Exe-$PlatformInfo$-$ArchInfo$-$CompilerInfo$-$Config$'
+		}
+	}
+	
+	ForEach(.Config in .Configs_Linux_GCC) {
+		Using(.Config)
+		.OutputBase + '/$PlatformInfo$-$ArchInfo$-$CompilerInfo$-$Config$'
+		.CompilerOptions + .CompilerOptionsC
+		ObjectList('$ProjectName$-Lib-$PlatformInfo$-$ArchInfo$-$CompilerInfo$-$Config$') {
+			.CompilerInputUnity = '$ProjectName$-Unity-Linux'
+			.CompilerOutputPath = '$OutputBase$/$ProjectPath$-Build/'
+		}
+		Executable('$ProjectName$-Exe-$PlatformInfo$-$ArchInfo$-$CompilerInfo$-$Config$') {
+			.PreBuildDependencies = {
+				'some_lib-$PlatformInfo$-$ArchInfo$-$CompilerInfo$-$Config$'
+			}
+			.Libraries = {
+				'$ProjectName$-Lib-$PlatformInfo$-$ArchInfo$-$CompilerInfo$-$Config$',
+				'some_lib-$PlatformInfo$-$ArchInfo$-$CompilerInfo$-$Config$'
+			}
+			.LinkerOutput  = '$OutputBase$/$ProjectName$'
+		}
+		Alias('$ProjectName$-$PlatformInfo$-$ArchInfo$-$CompilerInfo$-$Config$') {
+			.Targets = '$ProjectName$-Exe-$PlatformInfo$-$ArchInfo$-$CompilerInfo$-$Config$'
+		}
+	}
+	
+	ForEach(.Config in .Configs_Linux_Clang) {
+		Using(.Config)
+		.OutputBase + '/$PlatformInfo$-$ArchInfo$-$CompilerInfo$-$Config$'
+		.CompilerOptions + .CompilerOptionsC
+		ObjectList('$ProjectName$-Lib-$PlatformInfo$-$ArchInfo$-$CompilerInfo$-$Config$') {
+			.CompilerInputUnity = '$ProjectName$-Unity-Linux'
+			.CompilerOutputPath = '$OutputBase$/$ProjectPath$-Build/'
+		}
+		Executable('$ProjectName$-Exe-$PlatformInfo$-$ArchInfo$-$CompilerInfo$-$Config$') {
+			.PreBuildDependencies = {
+				'some_lib-$PlatformInfo$-$ArchInfo$-$CompilerInfo$-$Config$'
+			}
+			.Libraries = {
+				'$ProjectName$-Lib-$PlatformInfo$-$ArchInfo$-$CompilerInfo$-$Config$',
+				'some_lib-$PlatformInfo$-$ArchInfo$-$CompilerInfo$-$Config$'
+			}
+			.LinkerOutput  = '$OutputBase$/$ProjectName$'
+		}
+		Alias('$ProjectName$-$PlatformInfo$-$ArchInfo$-$CompilerInfo$-$Config$') {
+			.Targets = '$ProjectName$-Exe-$PlatformInfo$-$ArchInfo$-$CompilerInfo$-$Config$'
+		}
+	}
+	
+	#if __WINDOWS__
+	VCXProject('$ProjectName$-proj') {
+		.ProjectOutput        = '..\temp\VisualStudio\Projects\$ProjectName$.vcxproj'
+		.ProjectInputPaths    = '$ProjectPath$\'
+		.ProjectBasePath      = '$ProjectPath$\'
+		.LocalDebuggerCommand = '^$(SolutionDir)..\^$(Configuration)\Learn\$ProjectName$.exe'
+		.LocalDebuggerWorkingDirectory = '^$(SolutionDir)..\..\bin'
+		.ProjectAllowedFileExtensions  = { '*.cpp', '*.c', '*.hpp', '*.h', '*.asm', '*.bff' }
+	}
+	#endif
+}

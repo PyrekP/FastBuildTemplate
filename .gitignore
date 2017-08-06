@@ -1,0 +1,10 @@
+# git ignore file
+temp/*
+*.fdb
+external/**/*.dll
+external/**/*.exe
+external/**/*.h
+external/**/*.inl
+external/**/*.lib
+external/**/*.pdb
+external/**/*.txt
